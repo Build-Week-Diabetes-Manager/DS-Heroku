@@ -21,7 +21,7 @@ def address():
 
     # receive input
     inputs = request.get_json(force=True)
-    
+
     total_value = 0
     len_glucose = 0
     # get data from json
@@ -33,7 +33,6 @@ def address():
         # validate input
         assert isinstance(timestamp, str)
         assert isinstance(code, int)
-        assert isinstance(value, float)
 
         time = datetime.strptime(timestamp, '%Y-%m-%d %H:%M')
         next_day = time + timedelta(days=1)
@@ -65,6 +64,7 @@ def address():
     post_supper_time = f'{date[0]}-{date[1]}-{date[2]} 19:11'
     post_supper_time = datetime.strptime(post_supper_time, '%Y-%m-%d %H:%M')
     post_supper_min = (post_supper_time - pre_supper_time).total_seconds()/60
+
     # unpickle
     with open('model.pkl', 'rb') as mod:
         # [predict code,
@@ -76,20 +76,26 @@ def address():
     avg_values = total_value/len_glucose
 
     # predict
-    pre_breakfast = model.predict([[58, glucose_val, avg_values, pre_breakfast_min]])
-    post_breakfast = model.predict([[59, pre_breakfast[0], avg_values, post_breakfast_min]])
-    pre_lunch = model.predict([[60, post_breakfast[0], avg_values, pre_lunch_min]])
-    post_lunch = model.predict([[61, pre_lunch[0], avg_values, post_lunch_min]])
-    pre_supper = model.predict([[62, post_lunch[0], avg_values, pre_supper_min]])
-    post_supper = model.predict([[63, pre_supper[0], avg_values, post_supper_min]])
+    pre_breakfast = model.predict(
+        [[58, glucose_val, avg_values, pre_breakfast_min]])
+    post_breakfast = model.predict(
+        [[59, pre_breakfast[0], avg_values, post_breakfast_min]])
+    pre_lunch = model.predict(
+        [[60, post_breakfast[0], avg_values, pre_lunch_min]])
+    post_lunch = model.predict(
+        [[61, pre_lunch[0], avg_values, post_lunch_min]])
+    pre_supper = model.predict(
+        [[62, post_lunch[0], avg_values, pre_supper_min]])
+    post_supper = model.predict(
+        [[63, pre_supper[0], avg_values, post_supper_min]])
 
     # use a dictionary to format output for json
-    out = {'Pre-breakfast measurement': pre_breakfast[0],
-           'Post-breakfast measurement': post_breakfast[0],
-           'Pre-lunch measurement': pre_lunch[0],
-           'Post-lunch measurement': post_lunch[0],
-           'Pre-supper measurement': pre_supper[0],
-           'Post-supper measurement': post_supper[0]}
+    out = {'Pre-breakfast 07:23AM measurement': pre_breakfast[0],
+           'Post-breakfast 09:56AM measurement': post_breakfast[0],
+           'Pre-lunch 12:09PM measurement': pre_lunch[0],
+           'Post-lunch 14:20PM measurement': post_lunch[0],
+           'Pre-supper 17:52PM measurement': pre_supper[0],
+           'Post-supper 19:11PM measurement': post_supper[0]}
 
     # give output to sender.
     return app.response_class(
